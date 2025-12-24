@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, TextInput, ScrollView, StyleSheet, SafeAreaView, Alert } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { pallete } from "../theme/palette"; // Ajuste o caminho do pallete se necessário
@@ -7,13 +7,14 @@ import { Note } from "../api/notes-create";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BottomNavigation from "../components/bottom-navigation/bottom-navigation";
 import ScreenContextMenu, { ScreenContextMenuItem } from "../components/ScreenContextMenu";
-import { router } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import groupNotesByMonth from "../utils/groupNotesByMonth";
 import { formatDateString } from "../utils/formatDate";
 
 type NoteWithCreatedAt = Note & { createdAt: string | Date };
 
 export default function BlockNotes() {
+    const { refresh } = useLocalSearchParams();
     const [notes, setNotes] = useState<Note[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -25,40 +26,55 @@ export default function BlockNotes() {
         { label: "Write a note", icon: "📝", onPress: () => router.push("/noteEditor") }
     ];
 
-    useEffect(() => {
-        const fetchNotes = async () => {
-            setLoading(true);
-            setError(null);
+    const fetchNotes = async () => {
+        setLoading(true);
+        setError(null);
 
-            try {
-                const userId = await AsyncStorage.getItem("userId");
+        try {
+            const userId = await AsyncStorage.getItem("userId");
 
-                if (!userId) {
-                    throw new Error("Usuário não autenticado");
-                }
-
-                const notes = await listNotes();
-
-                if (notes.items.length === 0) setMessage('Ops! Não há notas criadas');
-                if (!notes) throw new Error('Ops! Algo deu errado. Tente novamente :)')
-
-                setNotes(notes.items);
-                setFilteredNotes(notes.items);
-            } catch (err) {
-                if (err instanceof Error) {
-                    setError(err.message);
-                    Alert.alert("Erro: ", err.message)
-                } else {
-                    setError("Opa! Erro desconhecido ao carregar notas");
-                }
-                console.log("erro: ", err)
-            } finally {
-                setLoading(false);
+            if (!userId) {
+                throw new Error("Usuário não autenticado");
             }
-        };
 
+            const notes = await listNotes();
+
+            if (notes.items.length === 0) setMessage('Ops! Não há notas criadas');
+            if (!notes) throw new Error('Ops! Algo deu errado. Tente novamente :)')
+
+            setNotes(notes.items);
+            setFilteredNotes(notes.items);
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(err.message);
+                Alert.alert("Erro: ", err.message)
+            } else {
+                setError("Opa! Erro desconhecido ao carregar notas");
+            }
+            console.log("erro: ", err)
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchNotes();
-    }, []);
+    }, [])
+
+    useFocusEffect(
+        useCallback(() => {
+            let active = true;
+
+            (async () => {
+                if (!active) return;
+                await fetchNotes();
+            })();
+
+            return () => {
+                active = false;
+            };
+        }, [])
+    );
 
 
     useEffect(() => {
@@ -193,6 +209,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     noteCard: {
+        justifyContent: "space-around",
         backgroundColor: "#FFFFFF",
         borderRadius: 12,
         padding: 16,
@@ -211,6 +228,7 @@ const styles = StyleSheet.create({
     noteFooter: {
         flexDirection: "row",
         justifyContent: "space-around",
+        alignItems: "center",
         marginTop: 10,
     },
     dateText: {

@@ -23,6 +23,7 @@ import { getNoteById } from "../api/notes-details";
 import { AttachmentView } from "../types/attachmentView";
 import { updateNote } from "../api/notes-update";
 import { UpdateNotePayload } from "../types/notesUpdate";
+import { deleteNote } from "../api/notes-delete";
 
 export default function NoteEditorScreen() {
     const { id } = useLocalSearchParams();
@@ -90,14 +91,10 @@ export default function NoteEditorScreen() {
     async function handleSaveNote() {
 
         if (id) {
-            let titleCreated = "";
-
-            if (!title || title.trim() === "") {
-                titleCreated = text.trim().split("\n")[0] || "Untitled";
-            }
+            const cretatedTitle = text.trim().split("\n")[0] || title; // Pega a primeira linha ou "Untitled" se não houver conteúdo
 
             const payload: UpdateNotePayload = {
-                title: title?.trim() ? title : titleCreated,
+                title: cretatedTitle,
                 content: text,
 
                 addAttachments: attachments.filter((a) => a.isRemote === false),
@@ -180,6 +177,24 @@ export default function NoteEditorScreen() {
         }
     }
 
+    async function handleDeleteNote() {
+
+        if (id) {
+            try {
+                await deleteNote(id as string);
+                router.push({
+                    pathname: "/blocknotes",
+                    params: { refresh: "true" }
+                })
+            } catch (err) {
+                console.error("Erro ao deletar nota:", err);
+            }
+        } else {
+            return;
+        }
+    }
+
+
     console.log("Anexos atuais:", attachments);
 
     return (
@@ -234,6 +249,7 @@ export default function NoteEditorScreen() {
                                         console.log("Ação confirmada")
                                         setText('')
                                         setAttachments([])
+                                        handleDeleteNote()
                                     },
                                     style: "destructive" // No iOS, deixa o texto em vermelho
                                 }
