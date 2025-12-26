@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
+
 export default function Index() {
   const [isChecking, setIsChecking] = useState(true);
 

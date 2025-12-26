@@ -4,13 +4,14 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     TouchableOpacity,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 // ajuste o caminho conforme o seu projeto
 import { pallete } from "../theme/palette";
 import { router } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context"
+
 
 type Props = {
     onNext?: () => void;

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-    SafeAreaView,
     StyleSheet,
     Text,
     TextInput,
@@ -13,8 +12,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AttachmentPopup from "../components/AttachmentPopup";
-import { NoteAttachment } from "../types/attachment";
-import { mapApiToView, mapLocalToView, pickAttachment } from "../utils/pickAttachment";
+import { pickAttachment } from "../utils/pickAttachment";
 import MoreOptionsPopup from "../components/MoreOptionsPopup";
 import TextColorPickerPopup from "../components/TextColorPickerPopup";
 import AttachmentsPreview from "../components/AttachmentPreview";
@@ -24,6 +22,8 @@ import { AttachmentView } from "../types/attachmentView";
 import { updateNote } from "../api/notes-update";
 import { UpdateNotePayload } from "../types/notesUpdate";
 import { deleteNote } from "../api/notes-delete";
+import { SafeAreaView } from "react-native-safe-area-context"
+
 
 export default function NoteEditorScreen() {
     const { id } = useLocalSearchParams();

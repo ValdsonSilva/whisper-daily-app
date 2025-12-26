@@ -4,7 +4,6 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     TouchableOpacity,
     TextInput,
     KeyboardAvoidingView,
@@ -16,6 +15,8 @@ import { pallete } from "../theme/palette";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { upsertMorningRitual } from "../api/ritual-create";
+import { SafeAreaView } from "react-native-safe-area-context"
+
 
 type Props = {
     onConfirmGoal?: (goal: string) => void;

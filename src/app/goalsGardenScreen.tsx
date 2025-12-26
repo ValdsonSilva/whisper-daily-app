@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { pallete } from "../theme/palette";  // Suponho que seja o arquivo de tema
 import { listRitualsByStatus } from "../api/ritual-list-status";
 import { Ritual, RitualStatus } from "../api/ritual-list-user";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SafeAreaView } from "react-native-safe-area-context"
+
 
 export default function GoalsGardenScreen() {
     const [selectedTab, setSelectedTab] = useState<RitualStatus>(RitualStatus.PLANNED);

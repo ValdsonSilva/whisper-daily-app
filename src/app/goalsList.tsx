@@ -3,7 +3,6 @@ import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     TouchableOpacity,
     ScrollView,
     Alert,
@@ -11,13 +10,12 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { pallete } from "../theme/palette";
 import { router } from "expo-router";
-import { listRituals, Ritual, RitualStatus } from "../api/ritual-list-user";
+import { listRituals, Ritual } from "../api/ritual-list-user";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { updateRitual } from "../api/ritual-update";
 import { getGreeting } from "../utils/getGreeting";
 import { LanguageCode } from "../api/auth";
 import { registerRitualCheckIn } from "../api/ritual-checking";
-import { listRitualsByStatus } from "../api/ritual-list-status";
+import { SafeAreaView } from "react-native-safe-area-context"
 
 type Props = {
     name?: string;
@@ -307,7 +305,7 @@ const styles = StyleSheet.create({
     greetingText: {
         fontSize: 24,
         fontWeight: "600",
-        color: "#041016",
+        color: pallete.white,
     },
     greetingNameRow: {
         flexDirection: "row",
@@ -325,7 +323,7 @@ const styles = StyleSheet.create({
     subtitle: {
         marginTop: 8,
         fontSize: 14,
-        color: "#16353F",
+        color: pallete.white,
     },
 
     card: {

@@ -5,8 +5,6 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
-    SafeAreaView,
-    SafeAreaViewBase
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -15,6 +13,7 @@ import { getHealth } from "../api/getHealth";
 import type { HealthResponse } from "../api/getHealth";
 import { LanguageCode, registerAnonymous } from "../api/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SafeAreaView } from "react-native-safe-area-context"
 
 type LanguageOption = {
     code: LanguageCode;

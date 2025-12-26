@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View, Text, TextInput, ScrollView, StyleSheet, SafeAreaView, Alert } from "react-native";
+import { View, Text, TextInput, ScrollView, StyleSheet, Alert } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { pallete } from "../theme/palette"; // Ajuste o caminho do pallete se necessário
 import { listNotes } from "../api/notes-list-user";
@@ -10,6 +10,7 @@ import ScreenContextMenu, { ScreenContextMenuItem } from "../components/ScreenCo
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import groupNotesByMonth from "../utils/groupNotesByMonth";
 import { formatDateString } from "../utils/formatDate";
+import { SafeAreaView } from "react-native-safe-area-context"
 
 type NoteWithCreatedAt = Note & { createdAt: string | Date };
 

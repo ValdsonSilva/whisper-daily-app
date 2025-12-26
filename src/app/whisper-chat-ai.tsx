@@ -1,10 +1,8 @@
-// src/screens/WhisperChatScreen.tsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
     StyleSheet,
-    SafeAreaView,
     TouchableOpacity,
     TextInput,
     ScrollView,
@@ -13,50 +11,121 @@ import {
 } from "react-native";
 import { pallete } from "../theme/palette";
 import { router } from "expo-router";
-
+import { SafeAreaView } from "react-native-safe-area-context"
+import { sendAiChatMessage } from "../api/ai-chat/create-message";
+import { listThreadMessages } from "../api/ai-chat/list-messages";
+import mapThreadMessageToChat from "../utils/mapMessages";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type ChatMessage = {
     id: string;
     text: string;
-    from: "user" | "whisper";
+    from: "USER" | "ASSISTANT" | "SYSTEM";
 };
 
 export default function WhisperChatScreen() {
     const [message, setMessage] = useState("");
+    const [threadId, setThreadId] = useState<string | null>(null);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
         {
             id: "1",
             text: "I'm excited to know how it was\nfor you, tell me!",
-            from: "whisper",
+            from: "ASSISTANT",
         },
     ]);
     const [isTyping, setIsTyping] = useState(false);
+    const [loadingThread, setLoadingThread] = useState(false);
+    const [cursor, setCursor] = useState<string | null>(null);
+    const [hasMore, setHasMore] = useState(true);
 
-    const handleSend = () => {
+    const cachedThreadId = async () => {
+        const cached = await AsyncStorage.getItem("whisperThreadId");
+
+        if (cached) setThreadId(cached);
+    }
+
+    useEffect(() => {
+        console.log("Entrou")
+
+        cachedThreadId();
+
+        if (!threadId) return;
+
+        const load = async () => {
+            try {
+                setLoadingThread(true);
+
+                const res = await listThreadMessages({
+                    threadId,
+                    take: 30,
+                    cursor: null, // primeira página
+                });
+
+                const mapped = res.items.map(mapThreadMessageToChat);
+
+                console.log("Mensagens: ", mapped);
+
+                // Se sua API retorna do mais novo -> mais antigo, inverta:
+                // mapped.reverse();
+
+                setChatMessages(mapped);
+                setCursor(res.nextCursor);
+                setHasMore(!!res.nextCursor);
+            } catch (err) {
+                console.error("Erro ao carregar mensagens da thread:", err);
+            } finally {
+                setLoadingThread(false);
+            }
+        };
+
+        load();
+    }, [threadId]);
+
+    const handleSend = async () => {
         const trimmed = message.trim();
         if (!trimmed) return;
 
         const userMsg: ChatMessage = {
             id: Date.now().toString(),
             text: trimmed,
-            from: "user",
+            from: "USER",
         };
 
-        // adiciona mensagem do usuário
         setChatMessages((prev) => [...prev, userMsg]);
         setMessage("");
 
-        // simula o Whisper digitando e respondendo
-        setIsTyping(true);
-        setTimeout(() => {
-            const reply: ChatMessage = {
+        try {
+            setIsTyping(true);
+
+            const result = await sendAiChatMessage({
+                content: trimmed,
+                threadId,
+            });
+
+            setThreadId(result.threadId);
+            await AsyncStorage.setItem("whisperThreadId", result.threadId);
+
+            const whisperMsg: ChatMessage = {
                 id: `${Date.now()}-whisper`,
-                text: "Thank you for sharing. How did that make you feel?",
-                from: "whisper",
+                text: result.reply,
+                from: "ASSISTANT",
             };
-            setChatMessages((prev) => [...prev, reply]);
+
+            setChatMessages((prev) => [...prev, whisperMsg]);
+        } catch (err) {
+            console.error("Erro ao enviar mensagem:", err);
+
+            // fallback visual (opcional)
+            const errorMsg: ChatMessage = {
+                id: `${Date.now()}-error`,
+                text: "Sorry, something went wrong. Please try again.",
+                from: "SYSTEM",
+            };
+
+            setChatMessages((prev) => [...prev, errorMsg]);
+        } finally {
             setIsTyping(false);
-        }, 1200);
+        }
     };
 
     return (
@@ -89,7 +158,7 @@ export default function WhisperChatScreen() {
                     <View
                         key={msg.id}
                         style={
-                            msg.from === "whisper"
+                            msg.from === "ASSISTANT"
                                 ? styles.messageBubble
                                 : styles.messageBubbleRight
                         }
@@ -223,6 +292,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.05,
         shadowRadius: 4,
         elevation: 2,
+        marginBottom: 8,
     },
     messageBubbleRight: {
         alignSelf: "flex-end",
@@ -238,12 +308,13 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.05,
         shadowRadius: 4,
         elevation: 2,
+        marginBottom: 8,
     },
     messageText: {
         fontSize: 14,
         color: "#111827",
         lineHeight: 20,
-        paddingBottom: 6,
+        marginBottom: 4,
     },
 
     typingBubble: {
