@@ -10,12 +10,14 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { pallete } from "../theme/palette";
 import { router } from "expo-router";
-import { listRituals, Ritual } from "../api/ritual-list-user";
+import { listRituals, Ritual } from "../api/ritual/ritual-list-user";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getGreeting } from "../utils/getGreeting";
 import { LanguageCode } from "../api/auth";
-import { registerRitualCheckIn } from "../api/ritual-checking";
+import { registerRitualCheckIn } from "../api/ritual/ritual-checking";
 import { SafeAreaView } from "react-native-safe-area-context"
+import SoundSelector from "../components/sound-selector/soundSelector";
+import { useTranslation } from "react-i18next";
 
 type Props = {
     name?: string;
@@ -27,6 +29,7 @@ export default function GoalsList() {
     const [error, setError] = useState<string | null>(null);
     const [userLanguage, setUserLanguage] = useState<string | null>("");
     const [replyLoading, setReplyLoading] = useState<boolean>(false);
+    const { t } = useTranslation("goalsList");
 
 
     useEffect(() => {
@@ -107,7 +110,7 @@ export default function GoalsList() {
                             <View style={styles.greetingNameRow}>
                             </View>
                             <Text style={styles.subtitle}>
-                                Let&apos;s move gently forward today.
+                                {t("subTitle")}
                             </Text>
                         </View>
                         <View />
@@ -118,7 +121,7 @@ export default function GoalsList() {
                         <Text style={styles.loading}>...</Text>
                     ) : rituals.map((ritual) => (
                         <View style={styles.card} key={ritual.id}>
-                            <Text style={styles.cardLabel}>Goal</Text>
+                            <Text style={styles.cardLabel}>{t("cardLabel")}</Text>
                             <Text style={styles.cardGoalText}>{ritual.title}</Text>
 
                             {ritual.aiReply ? "" : (
@@ -132,7 +135,7 @@ export default function GoalsList() {
                                     disabled={replyLoading}
                                 >
                                     <Text style={styles.cardButtonText}>
-                                        {replyLoading ? "Whisper is reflecting..." : "Mark as Done"}
+                                        {replyLoading ? t("buton") : t("buttonLoading")}
                                     </Text>
                                 </TouchableOpacity>
                             )}
@@ -141,7 +144,7 @@ export default function GoalsList() {
                             {replyLoading && (
                                 <View style={styles.aiReplyContainerLoading}>
                                     <Text style={styles.aiReplyLabel}>Whisper</Text>
-                                    <Text style={styles.aiReplyText}>Thinking about your day...</Text>
+                                    <Text style={styles.aiReplyText}>{t("aiReplyText")}</Text>
                                 </View>
                             )}
 
@@ -149,7 +152,7 @@ export default function GoalsList() {
                                 <View style={styles.aiReplyContainer}>
                                     <View style={styles.aiReplyHeader}>
                                         <Text style={styles.aiReplyLabel}>Whisper</Text>
-                                        <Text style={styles.aiReplyTag}>Reflection</Text>
+                                        <Text style={styles.aiReplyTag}>{t("aiReplyTag")}</Text>
                                     </View>
                                     <Text style={styles.aiReplyText}>{ritual.aiReply}</Text>
                                 </View>
@@ -160,33 +163,43 @@ export default function GoalsList() {
 
                     {/* Stats card */}
                     <View style={styles.card}>
-                        <Text style={styles.cardTitle}>This week&apos;s calm consistency</Text>
+                        <Text style={styles.cardTitle}>{t("statsCard.cardTitle")}</Text>
 
                         <View style={styles.statRow}>
                             <Text style={styles.statIcon}>🌱</Text>
-                            <Text style={styles.statLabel}>Goals completed</Text>
+                            <Text style={styles.statLabel}>{t("statsCard.goalsCompleted")}</Text>
                             <View style={styles.spacer} />
                             <Text style={styles.statValue}>3/7</Text>
                         </View>
 
                         <View style={styles.statRow}>
                             <Text style={styles.statIcon}>✅</Text>
-                            <Text style={styles.statLabel}>Streak</Text>
+                            <Text style={styles.statLabel}>{t("statsCard.streak")}</Text>
                             <View style={styles.spacer} />
-                            <Text style={styles.statValue}>4 days</Text>
+                            <Text style={styles.statValue}>4 {t("statsCard.days")}</Text>
                         </View>
 
                         <View style={styles.statRow}>
                             <Text style={styles.statIcon}>😊</Text>
-                            <Text style={styles.statLabel}>Mood average</Text>
+                            <Text style={styles.statLabel}>{t("statsCard.moodAverage")}</Text>
                             <View style={styles.spacer} />
                             <Text style={styles.statValue}>Peaceful</Text>
                         </View>
                     </View>
 
-                    <Text style={styles.gardenText}>
+                    {/* <Text style={styles.gardenText}>
                         Your garden is growing beautifully.
-                    </Text>
+                    </Text> */}
+
+                    <SoundSelector
+                        title="Waves"
+                        durationSec={295}
+                        initialPositionSec={0}
+                        onPrev={() => console.log("prev")}
+                        onNext={() => console.log("next")}
+                        onPlayPause={(playing) => console.log("playing:", playing)}
+                        onSeek={(sec) => console.log("seek:", sec)}
+                    />
 
                     {/* Espaço extra pro conteúdo não ficar escondido atrás da barra */}
                     <View style={{ height: 90 }} />

@@ -1,0 +1,14 @@
+{
+    "headerText": "Notes",
+    "placeHolder": "Search",
+    "loading": "Loading...",
+    "emptyText": "No notes yet.",
+    "label": "Write a note",
+    "errorMessages": {
+        "first": "User not authenticated",
+        "second": "Oops! Something went wrong. Try again :)",
+        "third": "Oops! Unknown error loading notes"
+    },
+    "messages": "Oops! No notes created",
+    "titleNote": "Note title"
+}

@@ -1,4 +1,4 @@
-import api from "../service/api";
+import api from "../../service/api";
 
 // Se já tiver esse tipo definido aqui, reaproveita:
 export type Ritual = {

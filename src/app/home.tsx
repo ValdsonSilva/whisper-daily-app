@@ -11,6 +11,7 @@ import { pallete } from "../theme/palette";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context"
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 
 type Props = {
     onEnterWhisper?: () => void;
@@ -18,6 +19,8 @@ type Props = {
 };
 
 export default function Home({ onEnterWhisper, onOpenBlocknote }: Props) {
+
+    const { t } = useTranslation("home");
 
     useEffect(() => {
         const verifyCacheData = async () => {
@@ -38,7 +41,6 @@ export default function Home({ onEnterWhisper, onOpenBlocknote }: Props) {
             <SafeAreaView style={styles.safeArea}>
                 {/* Logo */}
                 <View style={styles.logoWrapper}>
-                    {/* Troque o require pelo caminho real do seu logo */}
                     <Image
                         source={require("../images/whisper-logo.png")}
                         resizeMode="contain"
@@ -50,7 +52,8 @@ export default function Home({ onEnterWhisper, onOpenBlocknote }: Props) {
 
                 <View style={styles.content}>
                     <Text style={styles.title}>
-                        Bring quiet reflection{"\n"}to your day.
+                        {/* Bring quiet reflection{"\n"}to your day. */}
+                        {t("title")}
                     </Text>
 
                     <TouchableOpacity
@@ -58,7 +61,7 @@ export default function Home({ onEnterWhisper, onOpenBlocknote }: Props) {
                         activeOpacity={0.85}
                         onPress={() => router.push("/dailyGoal")}
                     >
-                        <Text style={styles.buttonText}>Enter Whisper</Text>
+                        <Text style={styles.buttonText}>{t("button.whisper")}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -66,11 +69,11 @@ export default function Home({ onEnterWhisper, onOpenBlocknote }: Props) {
                         activeOpacity={0.85}
                         onPress={() => router.push("/blocknotes")}
                     >
-                        <Text style={styles.buttonText}>Open Blocknote</Text>
+                        <Text style={styles.buttonText}>{t("button.notas")}</Text>
                     </TouchableOpacity>
                 </View>
 
-                <Text style={styles.footerText}>Each day is a new day to stay consistent.</Text>
+                <Text style={styles.footerText}>{t("footer")}</Text>
             </SafeAreaView>
         </LinearGradient>
     );

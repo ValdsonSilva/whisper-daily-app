@@ -1,4 +1,4 @@
-import api from "../service/api";
+import api from "../../service/api";
 
 // Tipo da resposta da rota
 export type Note = {

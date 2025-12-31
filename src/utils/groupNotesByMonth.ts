@@ -1,10 +1,14 @@
+import { getDeviceLanguage } from "../i18n";
+
 function toDate(value: string | Date): Date {
     return value instanceof Date ? value : new Date(value);
 }
 
 function monthKey(date: Date) {
-    // Ex.: "October 2025"
-    return date.toLocaleString("en-US", { month: "long", year: "numeric" });
+    const lang = getDeviceLanguage(); // "pt-BR" ou "en"
+    const s = date.toLocaleString(lang, { month: "long", year: "numeric" });
+
+    return s ? s.charAt(0).toLocaleUpperCase(lang) + s.slice(1) : s;
 }
 
 export default function groupNotesByMonth<T extends { createdAt: string | Date }>(notes: T[]) {
@@ -25,8 +29,9 @@ export default function groupNotesByMonth<T extends { createdAt: string | Date }
         );
     }
 
-    // Ordena os meses (mais recente primeiro), baseado no 1º dia do mês
+    // Ordena os meses (mais recente primeiro)
     const orderedKeys = Object.keys(groups).sort((a, b) => {
+        // Note: 'a' e 'b' aqui devem ser datas ou strings de data válidas para o toDate
         const ad = toDate(groups[a][0].createdAt);
         const bd = toDate(groups[b][0].createdAt);
         return bd.getTime() - ad.getTime();

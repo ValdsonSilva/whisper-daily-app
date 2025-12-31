@@ -1,5 +1,5 @@
-import api from "../service/api";
-import { UpdateNotePayload } from "../types/notesUpdate";
+import api from "../../service/api";
+import { UpdateNotePayload } from "../../types/notesUpdate";
 import type { Note } from "./notes-create"; // ou notes-types
 
 export async function updateNote(

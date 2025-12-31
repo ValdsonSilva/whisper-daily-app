@@ -16,13 +16,14 @@ import { pickAttachment } from "../utils/pickAttachment";
 import MoreOptionsPopup from "../components/MoreOptionsPopup";
 import TextColorPickerPopup from "../components/TextColorPickerPopup";
 import AttachmentsPreview from "../components/AttachmentPreview";
-import { createNote } from "../api/notes-create";
-import { getNoteById } from "../api/notes-details";
+import { createNote } from "../api/notes/notes-create";
+import { getNoteById } from "../api/notes/notes-details";
 import { AttachmentView } from "../types/attachmentView";
-import { updateNote } from "../api/notes-update";
+import { updateNote } from "../api/notes/notes-update";
 import { UpdateNotePayload } from "../types/notesUpdate";
-import { deleteNote } from "../api/notes-delete";
+import { deleteNote } from "../api/notes/notes-delete";
 import { SafeAreaView } from "react-native-safe-area-context"
+import { useTranslation } from "react-i18next";
 
 
 export default function NoteEditorScreen() {
@@ -36,6 +37,7 @@ export default function NoteEditorScreen() {
     const attachRef = useRef<View>(null);
     const [attachments, setAttachments] = useState<AttachmentView[]>([]);
     const [removedAttachmentIds, setRemovedAttachmentIds] = useState<string[]>([]);
+    const { t } = useTranslation("noteEditor");
 
     const [moreOpen, setMoreOpen] = useState(false);
     const [moreAnchor, setMoreAnchor] = useState({ x: 0, y: 0 });
@@ -213,7 +215,7 @@ export default function NoteEditorScreen() {
                         onPress={() => router.back()}
                     >
                         <Text style={styles.chevron}>‹</Text>
-                        <Text style={styles.topLeftText}>Notes</Text>
+                        <Text style={styles.topLeftText}>{t("topLeftText")}</Text>
                     </TouchableOpacity>
 
                     <View style={styles.topRight}>
@@ -235,16 +237,16 @@ export default function NoteEditorScreen() {
                     anchor={moreAnchor}
                     onDelete={() => {
                         Alert.alert(
-                            "Confirmação", // Título
-                            "Deseja realmente cancelar este anexo?", // Mensagem
+                            t("alerttitle"), // Título
+                            t("alertMensagem"), // Mensagem
                             [
                                 {
-                                    text: "Cancelar",
+                                    text: t("alertCancelButton"),
                                     onPress: () => console.log("Usuário cancelou a ação"),
                                     style: "cancel" // No iOS, isso estiliza o botão para indicar uma ação segura
                                 },
                                 {
-                                    text: "Sim, excluir",
+                                    text: t("alertConfirmButton"),
                                     onPress: () => {
                                         console.log("Ação confirmada")
                                         setText('')

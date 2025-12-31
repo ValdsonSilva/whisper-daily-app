@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
@@ -20,6 +21,7 @@ export default function AttachmentPopup({
     const popupWidth = 220;
     const left = Math.max(12, anchor.x - popupWidth / 2);
     const top = Math.max(12, anchor.y - 140);
+    const { t } = useTranslation("attachmentPopup");
 
     return (
         <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -33,11 +35,11 @@ export default function AttachmentPopup({
                             onAddFile();
                         }}
                     >
-                        <Text style={styles.label}>Add a file</Text>
+                        <Text style={styles.label}>{t("labelFile")}</Text>
                         <Text style={styles.icon}>📄</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                         style={styles.item}
                         activeOpacity={0.75}
                         onPress={() => {
@@ -47,7 +49,7 @@ export default function AttachmentPopup({
                     >
                         <Text style={styles.label}>Take a picture or record a video</Text>
                         <Text style={styles.icon}>📷</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                 </Pressable>
             </Pressable>
         </Modal>

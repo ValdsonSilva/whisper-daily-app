@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { pallete } from "../theme/palette";  // Suponho que seja o arquivo de tema
-import { listRitualsByStatus } from "../api/ritual-list-status";
-import { Ritual, RitualStatus } from "../api/ritual-list-user";
+import { listRitualsByStatus } from "../api/ritual/ritual-list-status";
+import { Ritual, RitualStatus } from "../api/ritual/ritual-list-user";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context"
+import { useTranslation } from "react-i18next";
 
 
 export default function GoalsGardenScreen() {
@@ -14,6 +15,7 @@ export default function GoalsGardenScreen() {
     const [rituals, setRituals] = useState<Ritual[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const { t } = useTranslation("goalsGarden");
 
     useEffect(() => {
         // Função para carregar os rituais quando o status mudar
@@ -45,11 +47,11 @@ export default function GoalsGardenScreen() {
     const renderStatusLabel = (status: RitualStatus) => {
         switch (status) {
             case "PLANNED":
-                return "Planned";
+                return t("labelPlanned");
             case "COMPLETED":
-                return "Done";
+                return t("labelDone");
             case "MISSED":
-                return "Missed";
+                return t("labelMissed");
             default:
                 return status;
         }
@@ -66,9 +68,9 @@ export default function GoalsGardenScreen() {
                 <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
                     {/* Header */}
                     <View style={styles.header}>
-                        <Text style={styles.title}>Your goals garden</Text>
+                        <Text style={styles.title}>{t("title")}</Text>
                         <Text style={styles.subtitle}>
-                            Every goal you nurture laces{"\n"}something blooming behind.
+                            {t("subtitle")}
                         </Text>
                     </View>
 
@@ -76,17 +78,17 @@ export default function GoalsGardenScreen() {
                     <View style={styles.tabsContainer}>
                         <View style={styles.tabsRow}>
                             <TabButton
-                                label="Planned"
+                                label={t("labelPlanned")}
                                 isActive={selectedTab === "PLANNED"}
                                 onPress={() => setSelectedTab(RitualStatus.PLANNED)}
                             />
                             <TabButton
-                                label="Missed"
+                                label={t("labelMissed")}
                                 isActive={selectedTab === "MISSED"}
                                 onPress={() => setSelectedTab(RitualStatus.MISSED)}
                             />
                             <TabButton
-                                label="Done"
+                                label={t("labelDone")}
                                 isActive={selectedTab === "COMPLETED"}
                                 onPress={() => setSelectedTab(RitualStatus.COMPLETED)}
                             />
@@ -96,7 +98,7 @@ export default function GoalsGardenScreen() {
 
                     {/* Goals list */}
                     <View style={styles.goalsList}>
-                        {loading && <Text style={styles.loading}>Loading...</Text>}
+                        {loading && <Text style={styles.loading}>{t("loading")}</Text>}
                         {error && <Text style={styles.error}>{error}</Text>}
                         {rituals.map((ritual) => (
                             <View key={ritual.id} style={styles.goalCard}>
@@ -107,11 +109,11 @@ export default function GoalsGardenScreen() {
                             </View>
                         ))}
                         {rituals.length === 0 && !loading && !error && (
-                            <Text style={styles.emptyText}>No goals in this section yet.</Text>
+                            <Text style={styles.emptyText}>{t("emptyText")}</Text>
                         )}
                     </View>
 
-                    <Text style={styles.footerMessage}>Let your intentions bloom</Text>
+                    <Text style={styles.footerMessage}>{t("footerMessage")}</Text>
 
                     <View style={{ height: 100 }} />
                 </ScrollView>

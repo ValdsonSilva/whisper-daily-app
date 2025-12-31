@@ -1,0 +1,7 @@
+{
+    "topLeftText": "Notes",
+    "alerttitle": "Confirmation",
+    "alertMensagem": "Do you really want to delete this note?",
+    "alertCancelButton": "Cancel",
+    "alertConfirmButton": "Yes, delete"
+}

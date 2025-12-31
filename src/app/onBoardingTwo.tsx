@@ -28,12 +28,12 @@ export default function OnboardingTwo({ onNext }: Props) {
             <SafeAreaView style={styles.safeArea}>
                 <View style={styles.content}>
                     <Text style={styles.title}>
-                        Small steps.{'\n'}Steady rythm
+                        Small steps.\nSteady rythm
                     </Text>
 
                     <View style={styles.textBlock}>
                         <Text style={styles.bodyText}>
-                            Celebrate each step and{'\n'}
+                            Celebrate each step and\n
                             feel inspired by your own rythm.
                         </Text>
                     </View>

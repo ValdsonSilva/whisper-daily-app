@@ -1,4 +1,4 @@
-import api from "../service/api";
+import api from "../../service/api";
 import { RitualStatus } from "./ritual-list-user";
 
 // Ajuste esse tipo conforme o seu modelo Prisma `RitualDay`

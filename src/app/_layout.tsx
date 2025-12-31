@@ -1,7 +1,20 @@
 import { Stack } from "expo-router";
+import { initI18n } from "../../src/i18n";
+import "../../src/i18n"; // inicializa i18n
+import { useEffect, useState } from "react";
+import { View } from "react-native";
 
 // rotas do aplicativo
 export default function RootLayout() {
+
+    const [ready, setReady] = useState(false);
+
+    useEffect(() => {
+        initI18n().then(() => setReady(true));
+    }, []);
+
+    if (!ready) return <View />; // ou Splash/Loading
+
     return (
         <Stack screenOptions={{ headerShown: false }}>
             {/* o Expo Router descobre as telas pelos arquivos */}

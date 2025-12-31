@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, TextInput, ScrollView, StyleSheet, Alert } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { pallete } from "../theme/palette"; // Ajuste o caminho do pallete se necessário
-import { listNotes } from "../api/notes-list-user";
-import { Note } from "../api/notes-create";
+import { listNotes } from "../api/notes/notes-list-user";
+import { Note } from "../api/notes/notes-create";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import BottomNavigation from "../components/bottom-navigation/bottom-navigation";
 import ScreenContextMenu, { ScreenContextMenuItem } from "../components/ScreenContextMenu";
@@ -11,6 +11,9 @@ import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import groupNotesByMonth from "../utils/groupNotesByMonth";
 import { formatDateString } from "../utils/formatDate";
 import { SafeAreaView } from "react-native-safe-area-context"
+import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
+import { getDeviceLanguage } from "../i18n";
 
 type NoteWithCreatedAt = Note & { createdAt: string | Date };
 
@@ -19,12 +22,14 @@ export default function BlockNotes() {
     const [notes, setNotes] = useState<Note[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [message, setMessage] = useState<string>("")
+    const [message, setMessage] = useState<string>("");
     const [searchText, setSearchText] = useState("");
     const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
+    const { t } = useTranslation("blockNotes");
+
 
     const menuItems: ScreenContextMenuItem[] = [
-        { label: "Write a note", icon: "📝", onPress: () => router.push("/noteEditor") }
+        { label: t("label"), icon: "📝", onPress: () => router.push("/noteEditor") }
     ];
 
     const fetchNotes = async () => {
@@ -35,13 +40,13 @@ export default function BlockNotes() {
             const userId = await AsyncStorage.getItem("userId");
 
             if (!userId) {
-                throw new Error("Usuário não autenticado");
+                throw new Error(t("errorMessages.first"));
             }
 
             const notes = await listNotes();
 
-            if (notes.items.length === 0) setMessage('Ops! Não há notas criadas');
-            if (!notes) throw new Error('Ops! Algo deu errado. Tente novamente :)')
+            if (notes.items.length === 0) setMessage(t("messages"));
+            if (!notes) throw new Error(t("errorMessages.second"));
 
             setNotes(notes.items);
             setFilteredNotes(notes.items);
@@ -50,7 +55,7 @@ export default function BlockNotes() {
                 setError(err.message);
                 Alert.alert("Erro: ", err.message)
             } else {
-                setError("Opa! Erro desconhecido ao carregar notas");
+                setError(t("errorMessages.third"));
             }
             console.log("erro: ", err)
         } finally {
@@ -95,14 +100,14 @@ export default function BlockNotes() {
             <LinearGradient colors={[pallete.main_bg, "#ffffff"]} start={{ x: 0, y: 0 }} end={{ x: 0.8, y: 1 }} style={styles.gradient}>
                 <SafeAreaView style={styles.safeArea}>
                     <View style={styles.header}>
-                        <Text style={styles.headerText}>Folders</Text>
-                        <Text style={styles.sharedText}>Shared</Text>
+                        <Text style={styles.headerText}>{t("headerText")}</Text>
+                        {/* <Text style={styles.sharedText}>Shared</Text> */}
 
                         {/* Search Bar */}
                         <View style={styles.searchContainer}>
                             <TextInput
                                 style={styles.searchInput}
-                                placeholder="Buscar"
+                                placeholder={t("placeHolder")}
                                 placeholderTextColor="#9CA3AF"
                                 value={searchText}
                                 onChangeText={setSearchText}
@@ -112,7 +117,7 @@ export default function BlockNotes() {
 
                     {/* Notes List Grouped by Month */}
                     <ScrollView contentContainerStyle={styles.notesList}>
-                        {loading && <Text style={styles.loading}>Loading...</Text>}
+                        {loading && <Text style={styles.loading}>{t("loading")}</Text>}
                         {error && <Text style={styles.error}>{error}</Text>}
                         {message && <Text style={styles.message}>{message}</Text>}
 
@@ -123,22 +128,32 @@ export default function BlockNotes() {
                             const { groups, orderedKeys } = groupNotesByMonth(validNotes);
 
                             if (!loading && !error && orderedKeys.length === 0) {
-                                return <Text style={styles.emptyText}>No notes yet.</Text>;
+                                return <Text style={styles.emptyText}>{t("emptyText")}</Text>;
                             }
 
                             return orderedKeys.map((month) => (
+
                                 <View key={month} style={{ marginBottom: 18 }}>
                                     <Text style={styles.monthTitle}>{month}</Text>
 
                                     <View>
                                         {groups[month].map((note: any) => (
-                                            <View key={note.id} style={styles.noteCard} onTouchStart={() => router.push({
-                                                pathname: "/noteEditor",
-                                                params: { id: note.id }
-                                            })}>
-                                                <Text style={[styles.noteText, { fontWeight: "bold" }]} numberOfLines={1}>
-                                                    {note.title ?? "Title of the notes"}
-                                                </Text>
+                                            <View key={note.id} style={styles.noteCard}>
+                                                <View style={{ flexDirection: "row-reverse", justifyContent: "space-between", alignItems: "center" }}>
+                                                    <Ionicons name="open-outline"
+                                                        size={25}
+                                                        color={"#000"}
+                                                        style={{ textAlign: "right" }}
+                                                        onPress={() => router.push({
+                                                            pathname: "/noteEditor",
+                                                            params: { id: note.id }
+                                                        })}
+                                                    />
+
+                                                    <Text style={[styles.noteText, { fontWeight: "bold", fontSize: 16 }]} numberOfLines={1}>
+                                                        {note.title ?? "Title of the notes"}
+                                                    </Text>
+                                                </View>
 
                                                 <View style={styles.noteFooter}>
                                                     <Text style={styles.dateText}>
@@ -210,10 +225,13 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     noteCard: {
+        flex: 1,
+        // flexDirection: "column",
         justifyContent: "space-around",
+        // alignItems: "center",
         backgroundColor: "#FFFFFF",
         borderRadius: 12,
-        padding: 16,
+        padding: 20,
         marginBottom: 12,
         shadowColor: "#000000",
         shadowOffset: { width: 0, height: 3 },
@@ -222,9 +240,10 @@ const styles = StyleSheet.create({
         elevation: 4,
     },
     noteText: {
-        fontSize: 16,
+        fontSize: 12,
         color: "#111827",
-        margin: 10
+        marginRight: 10,
+        flexWrap: "nowrap"
     },
     noteFooter: {
         flexDirection: "row",
@@ -235,6 +254,7 @@ const styles = StyleSheet.create({
     dateText: {
         fontSize: 12,
         color: "#9CA3AF",
+        marginLeft: 10,
     },
     emoji: {
         fontSize: 18,

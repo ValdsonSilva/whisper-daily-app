@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     View,
     Text,
@@ -16,6 +16,7 @@ import { sendAiChatMessage } from "../api/ai-chat/create-message";
 import { listThreadMessages } from "../api/ai-chat/list-messages";
 import mapThreadMessageToChat from "../utils/mapMessages";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 
 type ChatMessage = {
     id: string;
@@ -24,12 +25,13 @@ type ChatMessage = {
 };
 
 export default function WhisperChatScreen() {
+    const { t } = useTranslation("chat");
     const [message, setMessage] = useState("");
     const [threadId, setThreadId] = useState<string | null>(null);
     const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
         {
             id: "1",
-            text: "I'm excited to know how it was\nfor you, tell me!",
+            text: t("firstChatMessage"),
             from: "ASSISTANT",
         },
     ]);
@@ -37,49 +39,43 @@ export default function WhisperChatScreen() {
     const [loadingThread, setLoadingThread] = useState(false);
     const [cursor, setCursor] = useState<string | null>(null);
     const [hasMore, setHasMore] = useState(true);
-
-    const cachedThreadId = async () => {
-        const cached = await AsyncStorage.getItem("whisperThreadId");
-
-        if (cached) setThreadId(cached);
-    }
+    const loadedThreadIdRef = useRef<string | null>(null);
+    const threadIdFromCacheRef = useRef(false);
 
     useEffect(() => {
-        console.log("Entrou")
+        (async () => {
+            const cached = await AsyncStorage.getItem("whisperThreadId");
+            if (cached) {
+                threadIdFromCacheRef.current = true;
+                setThreadId(cached);
+            }
+        })();
+    }, []);
 
-        cachedThreadId();
-
+    useEffect(() => {
         if (!threadId) return;
 
-        const load = async () => {
+        // Só carrega histórico se veio do cache (ex.: reabrir app/tela)
+        if (!threadIdFromCacheRef.current) return;
+
+        if (loadedThreadIdRef.current === threadId) return;
+        loadedThreadIdRef.current = threadId;
+
+        (async () => {
             try {
                 setLoadingThread(true);
-
-                const res = await listThreadMessages({
-                    threadId,
-                    take: 30,
-                    cursor: null, // primeira página
-                });
-
+                const res = await listThreadMessages({ threadId, take: 30, cursor: null });
                 const mapped = res.items.map(mapThreadMessageToChat);
-
-                console.log("Mensagens: ", mapped);
-
-                // Se sua API retorna do mais novo -> mais antigo, inverta:
-                // mapped.reverse();
-
                 setChatMessages(mapped);
                 setCursor(res.nextCursor);
                 setHasMore(!!res.nextCursor);
-            } catch (err) {
-                console.error("Erro ao carregar mensagens da thread:", err);
             } finally {
                 setLoadingThread(false);
             }
-        };
-
-        load();
+        })();
     }, [threadId]);
+
+
 
     const handleSend = async () => {
         const trimmed = message.trim();
@@ -103,7 +99,10 @@ export default function WhisperChatScreen() {
             });
 
             setThreadId(result.threadId);
-            await AsyncStorage.setItem("whisperThreadId", result.threadId);
+            threadIdFromCacheRef.current = false; // <- importante
+            AsyncStorage.setItem("whisperThreadId", result.threadId).catch(console.log);
+
+            setChatMessages((prev) => [...prev, whisperMsg]);
 
             const whisperMsg: ChatMessage = {
                 id: `${Date.now()}-whisper`,
@@ -111,7 +110,6 @@ export default function WhisperChatScreen() {
                 from: "ASSISTANT",
             };
 
-            setChatMessages((prev) => [...prev, whisperMsg]);
         } catch (err) {
             console.error("Erro ao enviar mensagem:", err);
 
@@ -142,7 +140,7 @@ export default function WhisperChatScreen() {
                     </View>
                     <View>
                         <Text style={styles.headerTitle}>Whisper</Text>
-                        <Text style={styles.headerSubtitle}>Available to help you.</Text>
+                        <Text style={styles.headerSubtitle}>{t("headerSubTitle")}</Text>
                     </View>
                 </View>
             </View>
@@ -169,14 +167,14 @@ export default function WhisperChatScreen() {
 
                 {isTyping && (
                     <View style={styles.typingBubble}>
-                        <Text style={styles.typingText}>Whisper is typing...</Text>
+                        <Text style={styles.typingText}>{t("typingText")}</Text>
                     </View>
                 )}
             </ScrollView>
 
             {/* Input de mensagem */}
             <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : "position"}
+                behavior={Platform.OS === "ios" ? "padding" : "padding"}
                 keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
             >
                 <View style={styles.inputBarWrapper}>
@@ -333,7 +331,7 @@ const styles = StyleSheet.create({
     /* INPUT BAR */
     inputBarWrapper: {
         paddingHorizontal: 16,
-        paddingBottom: 20,
+        paddingBottom: 8,
         paddingTop: 8,
         flexDirection: "row",
         alignItems: "center",

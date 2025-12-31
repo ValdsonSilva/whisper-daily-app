@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
@@ -16,6 +17,7 @@ export default function MoreOptionsPopup({
   onDelete,
   onSaveDraft,
 }: Props) {
+  const { t } = useTranslation("optionsPopup")
   const width = 280;
 
   // posiciona abaixo do "..." com leve deslocamento à esquerdas
@@ -34,7 +36,7 @@ export default function MoreOptionsPopup({
               onDelete();
             }}
           >
-            <Text style={styles.rowText}>Delete note</Text>
+            <Text style={styles.rowText}>{t("deleteNote")}</Text>
             <Text style={styles.trash}>🗑️</Text>
           </TouchableOpacity>
 

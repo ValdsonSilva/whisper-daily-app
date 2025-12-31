@@ -14,8 +14,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import { pallete } from "../theme/palette";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { upsertMorningRitual } from "../api/ritual-create";
+import { upsertMorningRitual } from "../api/ritual/ritual-create";
 import { SafeAreaView } from "react-native-safe-area-context"
+import { useTranslation } from "react-i18next";
 
 
 type Props = {
@@ -24,6 +25,7 @@ type Props = {
 
 export default function DailyGoalScreen({ onConfirmGoal }: Props) {
     const [goal, setGoal] = useState("");
+    const { t } = useTranslation("dailyGoal");
 
     async function handleSave() {
         if (!goal.trim()) return;
@@ -84,11 +86,11 @@ export default function DailyGoalScreen({ onConfirmGoal }: Props) {
                     behavior={Platform.OS === "ios" ? "padding" : undefined}
                 >
                     <View style={styles.content}>
-                        <Text style={styles.title}>Today I’ll will...</Text>
+                        <Text style={styles.title}>{t("title")}</Text>
 
                         <TextInput
                             style={styles.input}
-                            placeholder="Write your goal here."
+                            placeholder={t("placeholders")}
                             placeholderTextColor="#9CA3AF"
                             value={goal}
                             onChangeText={setGoal}
@@ -107,12 +109,12 @@ export default function DailyGoalScreen({ onConfirmGoal }: Props) {
                                     isDisabled && styles.buttonTextDisabled,
                                 ]}
                             >
-                                Confirm goal.
+                                {t("button")}
                             </Text>
                         </TouchableOpacity>
 
                         <Text style={styles.footerText}>
-                            the first step is set the journey.
+                            {t("footer")}
                         </Text>
                     </View>
                 </KeyboardAvoidingView>

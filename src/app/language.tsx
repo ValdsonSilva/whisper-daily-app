@@ -1,5 +1,5 @@
 // src/screens/LanguageSelectionScreen.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import {
     View,
     Text,
@@ -14,6 +14,8 @@ import type { HealthResponse } from "../api/getHealth";
 import { LanguageCode, registerAnonymous } from "../api/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context"
+import { useTranslation } from "react-i18next";
+import { setAppLanguage, SupportedLang } from "../i18n";
 
 type LanguageOption = {
     code: LanguageCode;
@@ -25,15 +27,17 @@ type Props = {
 };
 
 const LANGUAGES: LanguageOption[] = [
-    { code: "en_US", label: "English" },
-    { code: "pt_BR", label: "Portuguese" },
+    { code: "en_US" as const, label: "English" },
+    { code: "pt_BR" as const, label: "Portuguese" },
 ];
 
 export default function LanguageSelectionScreen({ onSelectLanguage }: Props) {
     const [health, setHealth] = useState<HealthResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [locale, setLocale] = useState<LanguageCode>('es_ES');
+    const { t, i18n } = useTranslation();
 
+    // health check da api
     useEffect(() => {
         const fetch = async () => {
             try {
@@ -57,9 +61,16 @@ export default function LanguageSelectionScreen({ onSelectLanguage }: Props) {
             const response = await registerAnonymous({ locale: code, timeZone });
             console.log("User response:", response);
 
+            if (code === 'en_US') {
+                setAppLanguage('en')
+                await AsyncStorage.setItem("language", "en");
+            } else {
+                setAppLanguage(code as SupportedLang)
+                await AsyncStorage.setItem("language", code);
+            }
+
             await AsyncStorage.setItem("token", response.token);
             await AsyncStorage.setItem("userId", response.userId);
-            await AsyncStorage.setItem("language", code);
 
             router.push("/home");
         } catch (err) {

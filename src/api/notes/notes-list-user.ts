@@ -1,4 +1,4 @@
-import api from "../service/api";
+import api from "../../service/api";
 import type { Note } from "./notes-create";
 
 export type ListNotesResponse = {
@@ -26,4 +26,4 @@ export async function listNotes(params: ListNotesParams = {}): Promise<ListNotes
     });
 
     return data;
-}
+};

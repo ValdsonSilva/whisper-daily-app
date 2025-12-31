@@ -1,0 +1,15 @@
+{
+    "subTitle": "Vamos avançar com calma hoje.",
+    "cardLabel": "Objetivo",
+    "buton": "Marcar como concluído",
+    "buttonLoading": "Whisper está refletindo...",
+    "aiReplyText": "Pensando sobre o seu dia...",
+    "aiReplyTag": "Reflexão",
+    "statsCard": {
+        "cardTitle": "A consistência tranquila desta semana",
+        "goalsCompleted": "Objetivos concluídos",
+        "streak": "Sequência atual",
+        "days": "dias",
+        "moodAverage": "Humor médio"
+    }
+}

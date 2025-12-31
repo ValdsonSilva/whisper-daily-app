@@ -1,4 +1,4 @@
-import api from "../service/api";
+import api from "../../service/api";
 import { Note } from "./notes-create";
 
 // Tipo da resposta da rota

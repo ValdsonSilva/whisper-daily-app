@@ -1,0 +1,14 @@
+{
+    "headerText": "Notas",
+    "placeHolder": "Buscar",
+    "loading": "Carregando...",
+    "emptyText": "Sem notas ainda.",
+    "label": "Escreva uma nota",
+    "errorMessages": {
+        "first": "Usuário não autenticado",
+        "second": "Ops! Algo deu errado. Tente novamente :)",
+        "third": "Opa! Erro desconhecido ao carregar notas"
+    },
+    "messages": "Ops! Não há notas criadas",
+    "titleNote": "Título da nota"
+}

@@ -1,4 +1,4 @@
-import api from "../service/api";
+import api from "../../service/api";
 import { Ritual, RitualStatus } from "./ritual-list-user";
 
 export type ListRitualsByStatusResponse = {

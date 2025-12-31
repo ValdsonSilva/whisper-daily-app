@@ -1,0 +1,15 @@
+{
+    "subTitle": "Let's move forward calmly today.",
+    "cardLabel": "Goal",
+    "button": "Mark as done",
+    "buttonLoading": "Whisper is reflecting...",
+    "aiReplyText": "Thinking about your day...",
+    "aiReplyTag": "Reflection",
+    "statsCard": {
+        "cardTitle": "The calm consistency this week",
+        "goalsCompleted": "Done",
+        "streak": "Streak",
+        "days": "Days",
+        "moodAverage": "Average mood"
+    }
+}

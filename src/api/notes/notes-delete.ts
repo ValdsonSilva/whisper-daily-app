@@ -1,4 +1,4 @@
-import api from "../service/api";
+import api from "../../service/api";
 
 /**
  * Hard delete da nota (remove nota + anexos no Cloudinary)
