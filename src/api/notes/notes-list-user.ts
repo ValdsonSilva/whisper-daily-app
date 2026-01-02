@@ -4,6 +4,7 @@ import type { Note } from "./notes-create";
 export type ListNotesResponse = {
     items: Note[];
     nextCursor: string | null;
+    total: number;
 };
 
 export type ListNotesParams = {

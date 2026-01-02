@@ -11,7 +11,8 @@ import ptHome from "./locales/pt-BR/home.json";
 import ptNoteEditor from "./locales/pt-BR/noteEditor.json";
 import ptBlockNotes from "./locales/pt-BR/blockNotes.json"; // confira o nome do arquivo
 import ptAttachmentPopup from "./locales/pt-BR/attachmentPopup.json";
-import ptOptions from "./locales/pt-BR/optionsPopup.json"
+import ptOptions from "./locales/pt-BR/optionsPopup.json";
+import ptSounds from "./locales/pt-BR/sounds.json";
 
 import enChat from "./locales/en/chat.json";
 import enDailyGoal from "./locales/en/dailyGoal.json";
@@ -21,7 +22,8 @@ import enHome from "./locales/en/home.json";
 import enNoteEditor from "./locales/en/noteEditor.json";
 import enBlockNotes from "./locales/en/blockNotes.json";
 import enAttachmentPopup from "./locales/en/attachmentPopup.json";
-import enOptions from "./locales/en/optionsPopup.json"
+import enOptions from "./locales/en/optionsPopup.json";
+import enSounds from "./locales/en/sounds.json";
 
 
 
@@ -39,7 +41,8 @@ const resources = {
         noteEditor: ptNoteEditor,
         chat: ptChat,
         attachmentPopup: ptAttachmentPopup,
-        optionsPopup: ptOptions
+        optionsPopup: ptOptions,
+        sounds: ptSounds,
     },
     en: {
         home: enHome,
@@ -50,7 +53,8 @@ const resources = {
         noteEditor: enNoteEditor,
         chat: enChat,
         attachmentPopup: enAttachmentPopup,
-        optionsPopup: enOptions
+        optionsPopup: enOptions,
+        sounds: enSounds,
     },
 } as const;
 

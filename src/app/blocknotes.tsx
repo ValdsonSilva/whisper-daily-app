@@ -24,6 +24,7 @@ export default function BlockNotes() {
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string>("");
     const [searchText, setSearchText] = useState("");
+    const [total, setTotal] = useState<number | null>(null);
     const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
     const { t } = useTranslation("blockNotes");
 
@@ -50,6 +51,7 @@ export default function BlockNotes() {
 
             setNotes(notes.items);
             setFilteredNotes(notes.items);
+            setTotal(notes.total);
         } catch (err) {
             if (err instanceof Error) {
                 setError(err.message);
@@ -100,9 +102,13 @@ export default function BlockNotes() {
             <LinearGradient colors={[pallete.main_bg, "#ffffff"]} start={{ x: 0, y: 0 }} end={{ x: 0.8, y: 1 }} style={styles.gradient}>
                 <SafeAreaView style={styles.safeArea}>
                     <View style={styles.header}>
-                        <Text style={styles.headerText}>{t("headerText")}</Text>
+                        <Ionicons name="arrow-back" color={"#fff"} size={20} onPress={() => router.back()}/>
+                        {/* <Text style={styles.headerText}>{t("headerText")}</Text> */}
                         {/* <Text style={styles.sharedText}>Shared</Text> */}
+                    </View>
 
+                    <View>
+                        <Text style={styles.headerText}>{t("headerText")}</Text>
                         {/* Search Bar */}
                         <View style={styles.searchContainer}>
                             <TextInput
@@ -133,7 +139,7 @@ export default function BlockNotes() {
 
                             return orderedKeys.map((month) => (
 
-                                <View key={month} style={{ marginBottom: 18 }}>
+                                <View key={month}>
                                     <Text style={styles.monthTitle}>{month}</Text>
 
                                     <View>
@@ -171,9 +177,9 @@ export default function BlockNotes() {
                         })()}
                     </ScrollView>
 
-
-                    {/* Bottom Navigation (UI only) */}
-                    <BottomNavigation />
+                    <View style={styles.footer}>
+                        <Text style={{ color: "#fff" }}>{total ? `${total} ${t("headerText")}` : "..."}</Text>
+                    </View>
                 </SafeAreaView>
             </LinearGradient>
         </ScreenContextMenu>
@@ -190,6 +196,8 @@ const styles = StyleSheet.create({
     },
     header: {
         marginTop: 40,
+        flexDirection: "row",
+        justifyContent: "flex-start"
     },
     headerText: {
         fontSize: 28,
@@ -232,7 +240,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFFFFF",
         borderRadius: 12,
         padding: 20,
-        marginBottom: 12,
+        // marginBottom: 12,
         shadowColor: "#000000",
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.1,
@@ -293,4 +301,17 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "#F87171",
     },
+    footer: {
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        flexDirection: "row",
+        height: 113,
+        backgroundColor: "#BFCFE6",
+        color: "#fff",
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center"
+    }
 });

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { pallete } from "../theme/palette";  // Suponho que seja o arquivo de tema
 import { listRitualsByStatus } from "../api/ritual/ritual-list-status";
@@ -121,11 +121,13 @@ export default function GoalsGardenScreen() {
                 {/* Bottom nav (UI) */}
                 <View style={styles.bottomNav}>
                     <TouchableOpacity style={styles.navItem} onPress={() => router.push('/home')}>
-                        <Text style={styles.navIcon}>🏠</Text>
+                        {/* <Text style={styles.navIcon}>🏠</Text> */}
+                        <Image source={require("../images/home.png")} />
                         <Text style={styles.navLabel}>Home</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.navItem} onPress={() => router.push('/whisper-chat-ai')}>
-                        <Text style={styles.navIcon}>💬</Text>
+                        {/* <Text style={styles.navIcon}>💬</Text> */}
+                        <Image source={require("../images/whisper.png")} />
                         <Text style={styles.navLabel}>Whisper</Text>
                     </TouchableOpacity>
                 </View>

@@ -1,12 +1,14 @@
 // src/utils/getGreeting.ts
 
 import { LanguageCode } from "../api/auth";
+import { getDeviceLanguage } from "../i18n";
 
 type SupportedLocale = LanguageCode;
 
 export function getGreeting(locale: SupportedLocale = "en_US"): string {
     const now = new Date();
     const hour = now.getHours(); // 0–23
+    const deviceLanguage = getDeviceLanguage();
 
     let key: "morning" | "afternoon" | "evening";
 
@@ -18,7 +20,7 @@ export function getGreeting(locale: SupportedLocale = "en_US"): string {
         key = "evening";
     }
 
-    if (locale === "pt_BR") {
+    if (deviceLanguage === "pt-BR") {
         switch (key) {
             case "morning":
                 return "Bom dia";

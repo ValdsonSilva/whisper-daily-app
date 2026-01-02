@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     View,
     Text,
@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     ScrollView,
     Alert,
+    Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { pallete } from "../theme/palette";
@@ -18,9 +19,11 @@ import { registerRitualCheckIn } from "../api/ritual/ritual-checking";
 import { SafeAreaView } from "react-native-safe-area-context"
 import SoundSelector from "../components/sound-selector/soundSelector";
 import { useTranslation } from "react-i18next";
+import { Audio, AVPlaybackStatus } from "expo-av";
 
-type Props = {
-    name?: string;
+type Track = {
+    title: string;
+    source: any; // require(...) no Expo
 };
 
 export default function GoalsList() {
@@ -30,7 +33,142 @@ export default function GoalsList() {
     const [userLanguage, setUserLanguage] = useState<string | null>("");
     const [replyLoading, setReplyLoading] = useState<boolean>(false);
     const { t } = useTranslation("goalsList");
+    const { t: soundT } = useTranslation("sounds");
 
+    // lista de sons
+    const tracks: Track[] = [
+        { title: soundT("rain"), source: require("../sounds/rain.mp3") },
+    ];
+
+    const soundRef = useRef<Audio.Sound | null>(null);
+    const [trackIndex, setTrackIndex] = useState(0);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [durationSec, setDurationSec] = useState(0);
+    const [positionSec, setPositionSec] = useState(0);
+    const [isSeeking, setIsSeeking] = useState(false);
+
+    useEffect(() => {
+        (async () => {
+            // Importante para tocar no iOS mesmo no silencioso
+            await Audio.setAudioModeAsync({
+                playsInSilentModeIOS: true,
+                staysActiveInBackground: false,
+                shouldDuckAndroid: true,
+            });
+        })();
+    }, []);
+
+    useEffect(() => {
+        // carrega a faixa quando muda o índice
+        let mounted = true;
+
+        (async () => {
+            const wasPlaying = isPlaying;
+
+            // unload da anterior
+            if (soundRef.current) {
+                try {
+                    await soundRef.current.unloadAsync();
+                } catch { }
+                soundRef.current = null;
+            }
+
+            setDurationSec(0);
+            setPositionSec(0);
+
+            const { sound } = await Audio.Sound.createAsync(
+                tracks[trackIndex].source,
+                { shouldPlay: wasPlaying, positionMillis: 0},
+                onStatusUpdate
+            );
+
+            if (!mounted) {
+                await sound.unloadAsync();
+                return;
+            }
+
+            soundRef.current = sound;
+            // await sound.setIsLoopingAsync(true);
+        })();
+
+        return () => {
+            mounted = false;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [trackIndex]);
+
+    const onStatusUpdate = (status: AVPlaybackStatus) => {
+        if (!status.isLoaded) return;
+
+        setIsPlaying(status.isPlaying);
+
+        const dur = status.durationMillis ? status.durationMillis / 1000 : 0;
+        setDurationSec(dur);
+
+        if (!isSeeking) {
+            setPositionSec(status.positionMillis / 1000);
+        }
+
+        if (status.didJustFinish) {
+            handleNext();
+        }
+    };
+
+    const handlePlayPause = async () => {
+        const s = soundRef.current;
+        if (!s) return;
+
+        const status = await s.getStatusAsync();
+        if (!status.isLoaded) return;
+
+        if (status.isPlaying) {
+            await s.pauseAsync();
+        } else {
+            await s.playAsync();
+        }
+    };
+
+    const handlePrev = () => {
+        setTrackIndex((i) => (i - 1 + tracks.length) % tracks.length);
+    };
+
+    const handleNext = () => {
+        setTrackIndex((i) => (i + 1) % tracks.length);
+    };
+
+    const handleSeekStart = () => {
+        setIsSeeking(true);
+    };
+
+    const handleSeekWhileDragging = (sec: number) => {
+        // Só atualiza UI enquanto arrasta, sem mandar no áudio ainda (fica suave)
+        setPositionSec(sec);
+    };
+
+    const handleSeekComplete = async (sec: number) => {
+        const s = soundRef.current;
+        if (!s) {
+            setIsSeeking(false);
+            return;
+        }
+
+        try {
+            await s.setPositionAsync(Math.max(0, sec) * 1000);
+        } finally {
+            setIsSeeking(false);
+        }
+    };
+
+    const current = tracks[trackIndex];
+
+    useEffect(() => {
+        // cleanup geral ao desmontar screen/app
+        return () => {
+            if (soundRef.current) {
+                soundRef.current.unloadAsync().catch(() => { });
+            }
+        };
+    }, []);
 
     useEffect(() => {
         async function loadRituals() {
@@ -135,7 +273,8 @@ export default function GoalsList() {
                                     disabled={replyLoading}
                                 >
                                     <Text style={styles.cardButtonText}>
-                                        {replyLoading ? t("buton") : t("buttonLoading")}
+                                        {/* {replyLoading ? t("buton") : t("buttonLoading")} */}
+                                        {t("buton")}
                                     </Text>
                                 </TouchableOpacity>
                             )}
@@ -192,13 +331,16 @@ export default function GoalsList() {
                     </Text> */}
 
                     <SoundSelector
-                        title="Waves"
-                        durationSec={295}
-                        initialPositionSec={0}
-                        onPrev={() => console.log("prev")}
-                        onNext={() => console.log("next")}
-                        onPlayPause={(playing) => console.log("playing:", playing)}
-                        onSeek={(sec) => console.log("seek:", sec)}
+                        title={current.title}
+                        durationSec={durationSec}
+                        positionSec={positionSec}
+                        isPlaying={isPlaying}
+                        onPrev={handlePrev}
+                        onNext={handleNext}
+                        onPlayPause={handlePlayPause}
+                        onSeekStart={handleSeekStart}
+                        onSeek={handleSeekWhileDragging}
+                        onSeekComplete={handleSeekComplete}
                     />
 
                     {/* Espaço extra pro conteúdo não ficar escondido atrás da barra */}
@@ -216,7 +358,8 @@ export default function GoalsList() {
                         <Text style={styles.navLabel}>Inspired</Text>
                     </TouchableOpacity> */}
                     <TouchableOpacity style={styles.navItem} onPress={() => router.push('/whisper-chat-ai')}>
-                        <Text style={styles.navIcon}>💬</Text>
+                        {/* <Text style={styles.navIcon}>💬</Text> */}
+                        <Image source={require("../images/whisper.png")} />
                         <Text style={styles.navLabel}>Whisper</Text>
                     </TouchableOpacity>
                     {/* <TouchableOpacity style={styles.navItem}>

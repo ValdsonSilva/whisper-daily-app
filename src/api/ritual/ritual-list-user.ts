@@ -27,6 +27,7 @@ export type Ritual = {
     achieved: boolean; // null=sem resposta, true/false=sim/não
     aiReply: string; // 2–4 frases empáticas
     microStep: string; // sugestão curta para amanhã
+    pastDue: boolean; // expirado ou não
 
     // Subtarefas
     subtasks: Subtask[]
