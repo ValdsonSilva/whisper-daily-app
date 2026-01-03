@@ -16,6 +16,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context"
 import { useTranslation } from "react-i18next";
 import { setAppLanguage, SupportedLang } from "../i18n";
+import { registerForPush } from "../service/notifications";
+import api from "../service/api";
 
 type LanguageOption = {
     code: LanguageCode;
@@ -53,6 +55,7 @@ export default function LanguageSelectionScreen({ onSelectLanguage }: Props) {
 
         fetch();
     }, []);
+
 
     const handlePress = async (code: LanguageCode) => {
         try {

@@ -5,9 +5,9 @@ import {
     StyleSheet,
     TouchableOpacity,
     TextInput,
-    ScrollView,
     KeyboardAvoidingView,
     Platform,
+    FlatList,
 } from "react-native";
 import { pallete } from "../theme/palette";
 import { router } from "expo-router";
@@ -24,6 +24,29 @@ type ChatMessage = {
     from: "USER" | "ASSISTANT" | "SYSTEM";
 };
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function waitAssistantReply(
+    threadId: string,
+    listThreadMessages: (args: { threadId: string; take: number; cursor: string | null }) => Promise<any>,
+    mapThreadMessageToChat: (m: any) => ChatMessage
+): Promise<ChatMessage | null> {
+    for (let i = 0; i < 20; i++) {
+        const res = await listThreadMessages({ threadId, take: 30, cursor: null });
+        const mapped: ChatMessage[] = res.items.map(mapThreadMessageToChat);
+
+        const lastAssistant = [...mapped]
+            .reverse()
+            .find((m) => m?.from === "ASSISTANT" && typeof m.text === "string" && m.text.trim().length > 0);
+
+        if (lastAssistant) return lastAssistant;
+
+        await sleep(600);
+    }
+
+    return null;
+}
+
 export default function WhisperChatScreen() {
     const { t } = useTranslation("chat");
     const [message, setMessage] = useState("");
@@ -36,11 +59,12 @@ export default function WhisperChatScreen() {
         },
     ]);
     const [isTyping, setIsTyping] = useState(false);
-    const [loadingThread, setLoadingThread] = useState(false);
-    const [cursor, setCursor] = useState<string | null>(null);
-    const [hasMore, setHasMore] = useState(true);
+    // const [cursor, setCursor] = useState<string | null>(null);
+    // const [hasMore, setHasMore] = useState(true);
     const loadedThreadIdRef = useRef<string | null>(null);
     const threadIdFromCacheRef = useRef(false);
+    const flatListRef = useRef<any>(null);
+
 
     useEffect(() => {
         (async () => {
@@ -62,19 +86,15 @@ export default function WhisperChatScreen() {
         loadedThreadIdRef.current = threadId;
 
         (async () => {
-            try {
-                setLoadingThread(true);
-                const res = await listThreadMessages({ threadId, take: 30, cursor: null });
+            const res = await listThreadMessages({ threadId, take: 30, cursor: null });
+            if (res.items.length > 0) {
                 const mapped = res.items.map(mapThreadMessageToChat);
                 setChatMessages(mapped);
-                setCursor(res.nextCursor);
-                setHasMore(!!res.nextCursor);
-            } finally {
-                setLoadingThread(false);
             }
+
+            return;
         })();
     }, [threadId]);
-
 
 
     const handleSend = async () => {
@@ -93,27 +113,44 @@ export default function WhisperChatScreen() {
         try {
             setIsTyping(true);
 
+            console.log("Mensagens antes:", chatMessages.length)
+
             const result = await sendAiChatMessage({
                 content: trimmed,
-                threadId,
+                ...(threadId ? { threadId } : {}),
             });
 
             setThreadId(result.threadId);
-            threadIdFromCacheRef.current = false; // <- importante
+            threadIdFromCacheRef.current = false;
             AsyncStorage.setItem("whisperThreadId", result.threadId).catch(console.log);
+
+            // 1) tenta usar reply diretamente se vier
+            let replyText =
+                typeof result.reply === "string" ? result.reply : "";
+
+            // 2) se não veio, busca no histórico até aparecer
+            if (!replyText.trim()) {
+                const last = await waitAssistantReply(result.threadId, listThreadMessages, mapThreadMessageToChat);
+                replyText = last?.text ?? "";
+            }
+
+            if (!replyText.trim()) {
+                // fallback: evita balão vazio
+                replyText = "Não consegui obter a resposta agora. Tente novamente.";
+            }
+
+            const whisperMsg: ChatMessage = {
+                id: `${Date.now()}-${Math.random().toString(36)}`,
+                text: replyText,
+                from: "ASSISTANT",
+            };
 
             setChatMessages((prev) => [...prev, whisperMsg]);
 
-            const whisperMsg: ChatMessage = {
-                id: `${Date.now()}-whisper`,
-                text: result.reply,
-                from: "ASSISTANT",
-            };
 
         } catch (err) {
             console.error("Erro ao enviar mensagem:", err);
 
-            // fallback visual (opcional)
             const errorMsg: ChatMessage = {
                 id: `${Date.now()}-error`,
                 text: "Sorry, something went wrong. Please try again.",
@@ -125,6 +162,7 @@ export default function WhisperChatScreen() {
             setIsTyping(false);
         }
     };
+
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -145,16 +183,19 @@ export default function WhisperChatScreen() {
                 </View>
             </View>
 
-            {/* Mensagens */}
-            <ScrollView
+            {/* mensagens */}
+            <FlatList
+                ref={flatListRef}
+                data={chatMessages.filter(Boolean)}
+                keyExtractor={(item: any) => item.id}
                 style={styles.messagesContainer}
-                contentContainerStyle={styles.messagesContent}
-                showsVerticalScrollIndicator={true}
-                scrollsToTop={true}
-            >
-                {chatMessages.map((msg) => (
+                contentContainerStyle={[styles.messagesContent, { paddingBottom: 20 }]}
+                // Propriedade crucial para 2026: garante re-renderização se isTyping mudar
+                extraData={isTyping}
+
+                // Renderização dos balões de mensagem
+                renderItem={({ item: msg }: any) => (
                     <View
-                        key={msg.id}
                         style={
                             msg.from === "ASSISTANT"
                                 ? styles.messageBubble
@@ -163,14 +204,22 @@ export default function WhisperChatScreen() {
                     >
                         <Text style={styles.messageText}>{msg.text}</Text>
                     </View>
-                ))}
-
-                {isTyping && (
-                    <View style={styles.typingBubble}>
-                        <Text style={styles.typingText}>{t("typingText")}</Text>
-                    </View>
                 )}
-            </ScrollView>
+
+                // Componente de "Digitando" fica aqui para não quebrar a lista
+                ListFooterComponent={
+                    isTyping ? (
+                        <View style={styles.typingBubble}>
+                            <Text style={styles.typingText}>{t("typingText")}</Text>
+                        </View>
+                    ) : null
+                }
+
+                // Garante que a lista role para o fim quando o conteúdo aumentar
+                onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+                // Garante que role para o fim ao carregar inicialmente
+                onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            />
 
             {/* Input de mensagem */}
             <KeyboardAvoidingView

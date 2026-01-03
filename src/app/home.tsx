@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     Text,
@@ -12,24 +12,39 @@ import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context"
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
+import { registerForPush } from "../service/notifications";
+import api from "../service/api";
 
-type Props = {
-    onEnterWhisper?: () => void;
-    onOpenBlocknote?: () => void;
-};
 
-export default function Home({ onEnterWhisper, onOpenBlocknote }: Props) {
+export default function Home() {
 
     const { t } = useTranslation("home");
+    const [userId, setUserId] = useState<string | null>(null);
 
     useEffect(() => {
         const verifyCacheData = async () => {
             const data = await AsyncStorage.getAllKeys();
+            const cachedUserId = await AsyncStorage.getItem("userId")
+            setUserId(cachedUserId);
             console.log("Cached data keys: ", data);
         }
 
         verifyCacheData();
-    })
+    }, []);
+
+    useEffect(() => {
+        if (!userId) return;
+
+        (async () => {
+            const token = await registerForPush();
+            if (!token) return;
+
+            await api.post("/push/devices", {
+                token: token.token,
+                platform: token.platform,
+            });
+        })();
+    }, [userId]);
 
     return (
         <LinearGradient
